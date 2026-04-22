@@ -227,6 +227,8 @@ async def uptime(interaction: discord.Interaction):
 async def goodnight(interaction: discord.Interaction, message: str):
     await interaction.response.send_message(
         f"{interaction.user.mention} said: {message}\n\nHeyyy, you're so sweet !!!!!! Have a goodnight too sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<"
+    )
+
 
 @bot.tree.command(name="testdaily", description="Test the daily message feature (owner only)")
 async def testdaily(interaction: discord.Interaction):
