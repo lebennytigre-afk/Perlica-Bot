@@ -1,4 +1,5 @@
 import discord
+import sys
 from discord import app_commands
 from discord.ext import commands
 import asyncio
@@ -167,6 +168,18 @@ async def on_ready():
 async def ping(interaction: discord.Interaction):
     latency = round(bot.latency * 1000)
     await interaction.response.send_message(f"Pong! I'm alive and well. Latency: {latency}ms")
+
+@bot.tree.command(name="reboot", description="Restart the bot")
+async def reboot(interaction: discord.Interaction):
+    # Optional: restrict to you only
+    if interaction.user.id != YOUR_USER_ID:
+        await interaction.response.send_message("You can't use this command.", ephemeral=True)
+        return
+
+    await interaction.response.send_message("Rebooting...", ephemeral=True)
+
+    # Restart the bot process
+    os.execv(sys.executable, ['python'] + sys.argv)
 
 
 @bot.tree.command(name="perlica", description="Send a random Perlica image")
