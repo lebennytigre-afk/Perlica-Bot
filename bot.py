@@ -66,6 +66,21 @@ ROAST_MESSAGES = [
     "Coming soon... 👀",
 ]
 
+GNRESPONSES = [
+    "Heyyy, you're so sweet !!!!!! Have a goodnight too sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<",
+    "Aww goodnight !! Sleep well and dream something lovely ✧.* You deserve it ❤︎",
+    "Hehe goodnight cutie !! Don’t stay up too late okay? ✦ ݁˖ sweet dreams !!",
+    "Goodnighttt !! Hope you wake up feeling happy and cozy tomorrow ❤︎ ✧",
+    "Sleep tight !! Sending you lots of soft hugs and comfy vibes ✦ ݁˖",
+    "Goodnight sweetheart !! May your dreams be peaceful and warm ❤︎ >ᴗ<",
+    "Hehe gn !! Rest well and take care of yourself okay? ✧.*",
+    "Goodnight !! You did great today, I’m proud of you ✦ ݁˖ ❤︎",
+    "Aww gn !! Wrap yourself in blankets and have the coziest sleep ever ✧",
+    "Nighty night !! Don’t forget you’re amazing ❤︎ sweet dreams !!",
+    "Goodnight !! May tomorrow bring you lots of smiles ✦ ݁˖",
+    "Hehe goodnight !! Close your eyes and drift into sweet dreams ❤︎",
+]
+
 BOT_START_TIME = datetime.utcnow()
 
 # Tracks the last day each user ran /list, keyed by user_id -> "YYYY-MM-DD" in TIMEZONE
@@ -235,13 +250,12 @@ async def uptime(interaction: discord.Interaction):
     parts.append(f"{seconds}s")
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
     
-@bot.tree.command(name="goodnight_perlica", description="Send a sweet goodnight message")
-@app_commands.describe(message="What do you want to say?")
-async def goodnight(interaction: discord.Interaction, message: str):
-    await interaction.response.send_message(
-        f"{interaction.user.mention} said: {message}\n\nHeyyy, you're so sweet !!!!!! Have a goodnight too sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<"
-    )
-
+@bot.tree.command(
+    name="goodnight_perlica",
+    description="THATS MY COMMAND !!! DONT YOU DARE USE IT"
+)
+async def goodnight(interaction: discord.Interaction):
+    await interaction.response.send_message(random.choice(GNRESPONSES))
 
 @bot.tree.command(name="testdaily", description="Test the daily message feature (owner only)")
 async def testdaily(interaction: discord.Interaction):
