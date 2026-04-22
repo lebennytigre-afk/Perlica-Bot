@@ -172,7 +172,7 @@ async def ping(interaction: discord.Interaction):
 @bot.tree.command(name="reboot", description="Restart the bot")
 async def reboot(interaction: discord.Interaction):
     # Optional: restrict to you only
-    if interaction.user.id != YOUR_USER_ID:
+    if interaction.user.id != 1226192200497496105:
         await interaction.response.send_message("You can't use this command.", ephemeral=True)
         return
 
