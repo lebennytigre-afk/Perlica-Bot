@@ -291,6 +291,28 @@ async def reminder(interaction: discord.Interaction, minutes: int, message: str)
     print(f"[INFO] /reminder set by {user} — {minutes}min — {message}")
 
 
+@bot.tree.command(
+    name="dailylimit",
+    description="Enable or disable the once-per-day /list restriction (admin only)",
+)
+@app_commands.describe(enabled="True to enforce once-per-day, False to allow unlimited /list uses")
+@app_commands.default_permissions(manage_guild=True)
+async def dailylimit(interaction: discord.Interaction, enabled: bool):
+    global DAILY_LIMIT_ENABLED
+    DAILY_LIMIT_ENABLED = enabled
+    save_state()
+    status = "**enabled**" if enabled else "**disabled**"
+    note = (
+        "users can only run `/list` once per day."
+        if enabled
+        else "users can run `/list` as many times as they want."
+    )
+    await interaction.response.send_message(
+        f"🔒 Daily `/list` restriction is now {status} — {note}"
+    )
+    print(f"[INFO] /dailylimit set to {enabled} by {interaction.user}")
+
+
 @bot.tree.command(name="list", description="Start the interactive Arknights daily checklist")
 async def list_cmd(interaction: discord.Interaction):
     print(f"[DEBUG] /list called by {interaction.user}", flush=True)
