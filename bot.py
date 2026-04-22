@@ -18,6 +18,12 @@ MESSAGE_TIME = os.environ.get("DAILY_MESSAGE_TIME", "09:00")
 TIMEZONE = os.environ.get("TIMEZONE", "UTC")
 OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 
+# ⭐ ADD YOUR TWO USER IDS HERE ⭐
+TRACKED_USERS = [
+    1226192200497496105,  # Replace with first user's ID
+    287342168190877697,  # Replace with second user's ID
+]
+
 IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")
 
 PAIRS = [
@@ -148,6 +154,7 @@ async def on_ready():
     print(f"[INFO] Target channel ID : {CHANNEL_ID}")
     print(f"[INFO] Message time      : {MESSAGE_TIME} ({TIMEZONE})")
     print(f"[INFO] Rotating between  : {len(PAIRS)} message+image pairs")
+    print(f"[INFO] Tracked users for shared streak: {TRACKED_USERS}")
     try:
         synced = await bot.tree.sync()
         print(f"[INFO] Synced {len(synced)} slash commands")
@@ -335,6 +342,15 @@ async def reminder(interaction: discord.Interaction, minutes: int, message: str)
 @bot.tree.command(name="list", description="Start the interactive Arknights daily checklist")
 async def list_cmd(interaction: discord.Interaction):
     print(f"[DEBUG] /list called by {interaction.user}", flush=True)
+    
+    # Check if this user is one of the tracked users
+    if interaction.user.id not in TRACKED_USERS:
+        await interaction.response.send_message(
+            "❌ You are not authorized to use this command.",
+            ephemeral=True,
+        )
+        return
+    
     await interaction.response.defer()
 
     today = _today_key()
@@ -505,23 +521,31 @@ async def apply_streak_result(channel, user_id: int, score: int, total: int):
         )
         print(f"[INFO] User {user_id} scored {score}/{total} — does not qualify for streak")
     
-    # Check how many users qualified today
-    qualified_users = [uid for uid, s in DAILY_SCORES.items() if s >= STREAK_PASS_THRESHOLD]
+    # Check how many tracked users qualified today
+    qualified_tracked_users = [uid for uid in TRACKED_USERS if DAILY_SCORES.get(uid, 0) >= STREAK_PASS_THRESHOLD]
     
-    print(f"[DEBUG] Qualified users today: {len(qualified_users)} — {qualified_users}")
+    print(f"[DEBUG] Qualified tracked users today: {len(qualified_tracked_users)} — {qualified_tracked_users}")
     
-    # If exactly 2 users qualified, increase streak
-    if len(qualified_users) >= 2:
+    # Get the other user
+    other_user_id = TRACKED_USERS[1] if user_id == TRACKED_USERS[0] else TRACKED_USERS[0]
+    other_user_qualified = DAILY_SCORES.get(other_user_id, 0) >= STREAK_PASS_THRESHOLD
+    
+    # If both tracked users qualified, increase streak
+    if len(qualified_tracked_users) == 2:
         STREAK += 1
         await channel.send(
-            f"🔥 **BOTH USERS QUALIFIED!** The shared streak is now **{STREAK} days**! 🎉"
+            f"🔥 **BOTH TRACKED USERS QUALIFIED!** The shared streak is now **{STREAK} days**! 🎉"
         )
-        print(f"[INFO] Streak increased to {STREAK} (both users qualified)")
-    elif len(qualified_users) == 1:
+        print(f"[INFO] Streak increased to {STREAK} (both tracked users qualified)")
+    elif user_qualified and not other_user_qualified:
         await channel.send(
-            f"⏳ Waiting for the second user to qualify... (1/2 qualified)"
+            f"⏳ **1/2 tracked users qualified!** Waiting for the other user to complete their checklist..."
         )
-        print(f"[INFO] 1/2 users qualified today")
+        print(f"[INFO] 1/2 tracked users qualified today")
+    elif not user_qualified:
+        await channel.send(
+            f"💔 You didn't qualify, so the streak didn't increase today."
+        )
     
     # Mark this user as having used /list today
     LAST_LIST_USE[user_id] = today
@@ -541,7 +565,7 @@ HELP_PAGES = [
         "fields": [],
     },
     {
-        "title": "🎮 Help — Page 2/4 — Fun",
+        "title": "🎮 Help — Page 2/4 ��� Fun",
         "color": discord.Color.green(),
         "description": "Just for fun!",
         "fields": [
