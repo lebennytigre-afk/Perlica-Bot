@@ -221,6 +221,11 @@ async def uptime(interaction: discord.Interaction):
         parts.append(f"{minutes}m")
     parts.append(f"{seconds}s")
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
+    
+@bot.tree.command(name="Goodnight⋆‧°𓏲ּ𝄢Perlica", description="THATS MY COMMANT !!! DONT YOU DARE USE IT")
+async def Goodnight⋆‧°𓏲ּ𝄢Perlica(interaction: discord.Interaction):
+     await interaction.response.send_message(f"Heyyy, you're so sweet !!!!!! Have a goodnight too sweetheart .✦ ݁˖ ˖Ი𐑼⋆ Love you !! ݁ ❤︎ >ᴗ<")
+
 
 @bot.tree.command(name="testdaily", description="Test the daily message feature (owner only)")
 async def testdaily(interaction: discord.Interaction):
