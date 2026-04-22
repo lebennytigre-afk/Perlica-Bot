@@ -68,6 +68,38 @@ DAILY_LIMIT_ENABLED = True
 # Persistent state file (STREAK + LAST_LIST_USE + DAILY_LIMIT_ENABLED survive bot restarts)
 STATE_FILE = os.path.join(os.path.dirname(__file__), "bot_state.json")
 
+STREAK = 0
+LAST_LIST_USE = {}
+DAILY_LIMIT_ENABLED = True
+DAILY_SCORES = {}  # user_id -> score for today (reset each day by midnight loop)
+
+def load_state() -> None:
+    global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED, DAILY_SCORES
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        STREAK = int(data.get("streak", 0))
+        LAST_LIST_USE = {int(k): v for k, v in data.get("last_list_use", {}).items()}
+        DAILY_LIMIT_ENABLED = bool(data.get("daily_limit_enabled", True))
+        DAILY_SCORES = {int(k): v for k, v in data.get("daily_scores", {}).items()}
+        print(f"[INFO] Loaded state: streak={STREAK}, daily_scores={DAILY_SCORES}")
+    except FileNotFoundError:
+        print("[INFO] No state file yet — starting fresh")
+    except Exception as e:
+        print(f"[ERROR] Failed to load state file: {e}")
+
+def save_state() -> None:
+    try:
+        data = {
+            "streak": STREAK,
+            "last_list_use": {str(k): v for k, v in LAST_LIST_USE.items()},
+            "daily_limit_enabled": DAILY_LIMIT_ENABLED,
+            "daily_scores": {str(k): v for k, v in DAILY_SCORES.items()},
+        }
+        with open(STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"[ERROR] Failed to save state file: {e}")
 
 def load_state() -> None:
     global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED
