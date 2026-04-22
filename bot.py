@@ -295,7 +295,7 @@ async def reminder(interaction: discord.Interaction, minutes: int, message: str)
 async def list_cmd(interaction: discord.Interaction):
     print(f"[DEBUG] /list called by {interaction.user}", flush=True)
     await interaction.response.defer()
-
+ 
     today = _today_key()
     if LAST_LIST_USE.get(interaction.user.id) == today:
         await interaction.followup.send(
@@ -303,9 +303,10 @@ async def list_cmd(interaction: discord.Interaction):
             ephemeral=True,
         )
         return
-    LAST_LIST_USE[interaction.user.id] = today
-    save_state()
-
+    # Note: we only mark the day as "used" once the user finalizes a score
+    # (inside apply_streak_result). That way, if they choose to finish missing
+    # tasks and re-run /list, they're not locked out prematurely.
+ 
     questions = [
         "Have you collected your ship parts?",
         "Did you get all rare resources?",
@@ -318,13 +319,13 @@ async def list_cmd(interaction: discord.Interaction):
         "Did you complete all available events?",
         "Have you done all the quests?"
     ]
-
+ 
     user = interaction.user
     channel = interaction.channel
-
+ 
     def check(m):
         return m.author == user and m.channel == channel
-
+ 
     preview = "\n".join([f"⬜ {q}" for q in questions])
     embed = discord.Embed(
         title="📋 Daily Checklist",
@@ -333,15 +334,15 @@ async def list_cmd(interaction: discord.Interaction):
     )
     await interaction.followup.send(embed=embed)
     await channel.send("Do you want to go **step-by-step** or answer **all at once**? (type `step` or `all`)")
-
+ 
     try:
         mode_msg = await bot.wait_for("message", timeout=30.0, check=check)
     except asyncio.TimeoutError:
         await channel.send("⏰ You took too long. Cancelled.")
         return
-
+ 
     mode = mode_msg.content.lower()
-
+ 
     if mode == "step":
         await channel.send("Starting step-by-step checklist...")
         score = 0
@@ -361,8 +362,8 @@ async def list_cmd(interaction: discord.Interaction):
             else:
                 await channel.send("⚠️ Invalid answer, counted as no.")
         await channel.send("✅ Checklist completed!")
-        await apply_streak_result(channel, score, len(questions))
-
+        await apply_streak_result(channel, interaction.user.id, score, len(questions))
+ 
     elif mode == "all":
         await channel.send("Okay! Answer **yes** if you completed everything, or **no** if you missed something.")
         try:
@@ -371,12 +372,12 @@ async def list_cmd(interaction: discord.Interaction):
             await channel.send("⏰ Too slow. Cancelled.")
             return
         answer = msg.content.lower()
-
+ 
         if answer == "yes":
             await channel.send(f"📊 Perfect! You completed **{len(questions)}/{len(questions)}** tasks.")
-            await apply_streak_result(channel, len(questions), len(questions))
+            await apply_streak_result(channel, interaction.user.id, len(questions), len(questions))
             return
-
+ 
         elif answer == "no":
             await channel.send(
                 "❌ What are you missing? "
@@ -388,7 +389,7 @@ async def list_cmd(interaction: discord.Interaction):
                 await channel.send("⏰ Too slow. Cancelled.")
                 return
             missing_numbers = msg2.content.split()
-
+ 
             await channel.send("Do you want to **do them now** or **skip**? (type `yes` or `no`)")
             try:
                 msg3 = await bot.wait_for("message", timeout=60.0, check=check)
@@ -396,7 +397,7 @@ async def list_cmd(interaction: discord.Interaction):
                 await channel.send("⏰ Too slow. Cancelled.")
                 return
             decision = msg3.content.lower()
-
+ 
             if decision == "yes":
                 await channel.send("👍 No problem, just re-use `/list` when you're done!")
                 return
@@ -408,7 +409,7 @@ async def list_cmd(interaction: discord.Interaction):
                     f"Done: **{done_count}/{total}**\n"
                     f"Missing: **{len(missing_numbers)} tasks**"
                 )
-                await apply_streak_result(channel, done_count, total)
+                await apply_streak_result(channel, interaction.user.id, done_count, total)
                 return
             else:
                 await channel.send("Invalid choice. Use `yes` or `no`.")
@@ -417,9 +418,9 @@ async def list_cmd(interaction: discord.Interaction):
             await channel.send("Please answer only `yes` or `no`.")
     else:
         await channel.send("Invalid option. Use `step` or `all`.")
-
-
-async def apply_streak_result(channel, score: int, total: int):
+ 
+ 
+async def apply_streak_result(channel, user_id: int, score: int, total: int):
     global STREAK
     if score >= STREAK_PASS_THRESHOLD:
         STREAK += 1
@@ -435,6 +436,9 @@ async def apply_streak_result(channel, score: int, total: int):
             f"(needed at least **{STREAK_PASS_THRESHOLD}** to keep the streak)."
         )
         print(f"[INFO] Streak reset (was {old}) — score {score}/{total}")
+    # Now that the user has finalized their score for today, lock them out
+    # from running /list again until tomorrow.
+    LAST_LIST_USE[user_id] = _today_key()
     save_state()
 
 
