@@ -68,15 +68,19 @@ DAILY_LIMIT_ENABLED = True
 # Persistent state file
 STATE_FILE = os.path.join(os.path.dirname(__file__), "bot_state.json")
 
+# Track today's scores: user_id -> score (reset each day)
+DAILY_SCORES = {}
+
 
 def load_state() -> None:
-    global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED
+    global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED, DAILY_SCORES
     try:
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
         STREAK = int(data.get("streak", 0))
         LAST_LIST_USE = {int(k): v for k, v in data.get("last_list_use", {}).items()}
         DAILY_LIMIT_ENABLED = bool(data.get("daily_limit_enabled", True))
+        DAILY_SCORES = {int(k): v for k, v in data.get("daily_scores", {}).items()}
         print(
             f"[INFO] Loaded state: streak={STREAK}, "
             f"{len(LAST_LIST_USE)} user(s) tracked, "
@@ -94,6 +98,7 @@ def save_state() -> None:
             "streak": STREAK,
             "last_list_use": {str(k): v for k, v in LAST_LIST_USE.items()},
             "daily_limit_enabled": DAILY_LIMIT_ENABLED,
+            "daily_scores": {str(k): v for k, v in DAILY_SCORES.items()},
         }
         with open(STATE_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
@@ -480,22 +485,46 @@ async def list_cmd(interaction: discord.Interaction):
 
 
 async def apply_streak_result(channel, user_id: int, score: int, total: int):
-    global STREAK
-    if score >= STREAK_PASS_THRESHOLD:
+    global STREAK, DAILY_SCORES
+    today = _today_key()
+    
+    # Store this user's score for today
+    DAILY_SCORES[user_id] = score
+    
+    # Check if this score qualifies (≥ threshold)
+    user_qualified = score >= STREAK_PASS_THRESHOLD
+    
+    if user_qualified:
+        await channel.send(
+            f"✅ **Score: {score}/{total}** — You qualified for the streak! (≥{STREAK_PASS_THRESHOLD})"
+        )
+        print(f"[INFO] User {user_id} scored {score}/{total} — qualifies for streak")
+    else:
+        await channel.send(
+            f"❌ **Score: {score}/{total}** — You didn't qualify for the streak. (needed ≥{STREAK_PASS_THRESHOLD})"
+        )
+        print(f"[INFO] User {user_id} scored {score}/{total} — does not qualify for streak")
+    
+    # Check how many users qualified today
+    qualified_users = [uid for uid, s in DAILY_SCORES.items() if s >= STREAK_PASS_THRESHOLD]
+    
+    print(f"[DEBUG] Qualified users today: {len(qualified_users)} — {qualified_users}")
+    
+    # If exactly 2 users qualified, increase streak
+    if len(qualified_users) >= 2:
         STREAK += 1
         await channel.send(
-            f"🔥 **STREAK INCREASED!** Score: **{score}/{total}** — current streak: **{STREAK} days**"
+            f"🔥 **BOTH USERS QUALIFIED!** The shared streak is now **{STREAK} days**! 🎉"
         )
-        print(f"[INFO] Streak increased to {STREAK} (score {score}/{total})")
-    else:
-        old = STREAK
-        STREAK = 0
+        print(f"[INFO] Streak increased to {STREAK} (both users qualified)")
+    elif len(qualified_users) == 1:
         await channel.send(
-            f"💔 **Streak reset.** Score: **{score}/{total}** "
-            f"(needed at least **{STREAK_PASS_THRESHOLD}** to keep the streak)."
+            f"⏳ Waiting for the second user to qualify... (1/2 qualified)"
         )
-        print(f"[INFO] Streak reset (was {old}) — score {score}/{total}")
-    LAST_LIST_USE[user_id] = _today_key()
+        print(f"[INFO] 1/2 users qualified today")
+    
+    # Mark this user as having used /list today
+    LAST_LIST_USE[user_id] = today
     save_state()
 
 
@@ -530,7 +559,7 @@ HELP_PAGES = [
         "fields": [
             ("/list", "Start the daily checklist (score ≥5 grows the streak)"),
             ("/mb", "Confess you didn't do your dailys"),
-            ("/streak", "Show the current daily streak"),
+            ("/streak", "Show the current shared daily streak"),
             ("/nextdaily", "Time until the next daily reminder"),
             ("/dailylimit <enabled>", "Owner: toggle the once-per-day /list restriction"),
         ],
@@ -651,6 +680,11 @@ async def daily_message_loop():
                     f"@everyone Also don't forget to say if you did or didn't do your dailys, "
                     f"in the commands channel <#{COMMANDS_CHANNEL_ID}>."
                 )
+                
+                # Reset daily scores at midnight
+                global DAILY_SCORES
+                DAILY_SCORES = {}
+                print("[INFO] Daily scores reset for new day")
             except discord.Forbidden:
                 print("[ERROR] Missing permissions to send messages in this channel.")
             except Exception as e:
