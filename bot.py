@@ -66,6 +66,8 @@ ROAST_MESSAGES = [
     "Coming soon... 👀",
 ]
 
+owner = await bot.fetch_user(OWNER_ID)
+
 GNRESPONSES = [
     "Heyyy, you're so sweet !!!!!! Have a goodnight too sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<",
     "Aww goodnight !! Sleep well and dream something lovely ✧.* You deserve it ❤︎",
@@ -272,8 +274,6 @@ responses_user_two = [
     "Yea yea go to sleep"
     "...",
 ]
-
-owner = await bot.fetch_user(OWNER_ID)
 
 default_responses = [
     f"Goodnight.... I'm calling my man to beat your ass up! {owner.mention}"
