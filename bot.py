@@ -8,6 +8,17 @@ import os
 import random
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv 
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+dotenv_path = os.path.join(BASE_DIR, '.env')
+
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+    print(f"[DEBUG] Fichier .env chargé depuis : {dotenv_path}")
+else:
+    print(f"[WARNING] Aucun fichier .env trouvé à : {dotenv_path}")
+
 STREAK = 0
 COMMANDS_CHANNEL_ID = 1495506889385971893
 STREAK_PASS_THRESHOLD = 5
