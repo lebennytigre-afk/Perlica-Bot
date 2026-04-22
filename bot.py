@@ -66,8 +66,6 @@ ROAST_MESSAGES = [
     "Coming soon... 👀",
 ]
 
-owner = await bot.fetch_user(OWNER_ID)
-
 GNRESPONSES = [
     "Heyyy, you're so sweet !!!!!! Have a goodnight too sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<",
     "Aww goodnight !! Sleep well and dream something lovely ✧.* You deserve it ❤︎",
@@ -253,9 +251,12 @@ async def uptime(interaction: discord.Interaction):
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
     
 import random
+import discord
 
-USER_ONE_ID = 1226192200497496105  # replace with first user ID
-USER_TWO_ID = 287342168190877697  # replace with second user ID
+USER_ONE_ID = 1226192200497496105
+USER_TWO_ID = 287342168190877697
+
+OWNER_ID = 1226192200497496105  # or your ID
 
 responses_user_one = [
     "Heyyy you're so sweet !!! Have a perfect night sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<",
@@ -267,16 +268,16 @@ responses_user_one = [
 ]
 
 responses_user_two = [
-    "Ey who is this ? Ewww get out of my sight ! (im to kind ill still say you goodnight) Goodnight.... hmmpppf",
+    "Ey who is this ? Ewww get out of my sight ! (I'm too kind I'll still say goodnight) Goodnight.... hmmpf",
     "No thanks...",
     "Lennyyyyy protect me from that guy !!!",
     "Gn- bruh",
-    "Yea yea go to sleep"
+    "Yea yea go to sleep",
     "...",
 ]
 
 default_responses = [
-    f"Goodnight.... I'm calling my man to beat your ass up! {owner.mention}"
+    f"Goodnight.... I'm calling my man to beat your ass up! <@{OWNER_ID}>"
 ]
 
 @bot.tree.command(
@@ -288,8 +289,10 @@ async def goodnight(interaction: discord.Interaction):
 
     if user_id == USER_ONE_ID:
         response = random.choice(responses_user_one)
+
     elif user_id == USER_TWO_ID:
         response = random.choice(responses_user_two)
+
     else:
         response = random.choice(default_responses)
 
