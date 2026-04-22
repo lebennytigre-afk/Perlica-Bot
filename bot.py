@@ -65,41 +65,9 @@ LAST_LIST_USE = {}
 # When True, users can only run /list once per day. Togglable via /dailylimit.
 DAILY_LIMIT_ENABLED = True
 
-# Persistent state file (STREAK + LAST_LIST_USE + DAILY_LIMIT_ENABLED survive bot restarts)
+# Persistent state file
 STATE_FILE = os.path.join(os.path.dirname(__file__), "bot_state.json")
 
-STREAK = 0
-LAST_LIST_USE = {}
-DAILY_LIMIT_ENABLED = True
-DAILY_SCORES = {}  # user_id -> score for today (reset each day by midnight loop)
-
-def load_state() -> None:
-    global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED, DAILY_SCORES
-    try:
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        STREAK = int(data.get("streak", 0))
-        LAST_LIST_USE = {int(k): v for k, v in data.get("last_list_use", {}).items()}
-        DAILY_LIMIT_ENABLED = bool(data.get("daily_limit_enabled", True))
-        DAILY_SCORES = {int(k): v for k, v in data.get("daily_scores", {}).items()}
-        print(f"[INFO] Loaded state: streak={STREAK}, daily_scores={DAILY_SCORES}")
-    except FileNotFoundError:
-        print("[INFO] No state file yet — starting fresh")
-    except Exception as e:
-        print(f"[ERROR] Failed to load state file: {e}")
-
-def save_state() -> None:
-    try:
-        data = {
-            "streak": STREAK,
-            "last_list_use": {str(k): v for k, v in LAST_LIST_USE.items()},
-            "daily_limit_enabled": DAILY_LIMIT_ENABLED,
-            "daily_scores": {str(k): v for k, v in DAILY_SCORES.items()},
-        }
-        with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-    except Exception as e:
-        print(f"[ERROR] Failed to save state file: {e}")
 
 def load_state() -> None:
     global STREAK, LAST_LIST_USE, DAILY_LIMIT_ENABLED
@@ -107,7 +75,6 @@ def load_state() -> None:
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
         STREAK = int(data.get("streak", 0))
-        # JSON keys are strings — convert back to int user_ids
         LAST_LIST_USE = {int(k): v for k, v in data.get("last_list_use", {}).items()}
         DAILY_LIMIT_ENABLED = bool(data.get("daily_limit_enabled", True))
         print(
@@ -323,8 +290,8 @@ async def dailylimit(interaction: discord.Interaction, enabled: bool):
 @bot.tree.command(name="mb", description="Confess you didn't do your dailys")
 async def mb(interaction: discord.Interaction):
     await interaction.response.send_message(
-        f"Unfortunately {interaction.user.mention} didn't completed his dailys, "
-        f"he either forgot or was to buisy to play the game, he'll remember next time ! ♡"
+        f"Unfortunately {interaction.user.mention} didn't complete his dailys, "
+        f"he either forgot or was too busy to play the game, he'll remember next time ! ♡"
     )
 
 
@@ -372,9 +339,6 @@ async def list_cmd(interaction: discord.Interaction):
             ephemeral=True,
         )
         return
-    # Note: we only mark the day as "used" once the user finalizes a score
-    # (inside apply_streak_result). That way, if they choose to finish missing
-    # tasks and re-run /list, they're not locked out prematurely.
 
     questions = [
         "Have you collected your ship parts?",
@@ -531,8 +495,6 @@ async def apply_streak_result(channel, user_id: int, score: int, total: int):
             f"(needed at least **{STREAK_PASS_THRESHOLD}** to keep the streak)."
         )
         print(f"[INFO] Streak reset (was {old}) — score {score}/{total}")
-    # Now that the user has finalized their score for today, lock them out
-    # from running /list again until tomorrow.
     LAST_LIST_USE[user_id] = _today_key()
     save_state()
 
@@ -686,7 +648,7 @@ async def daily_message_loop():
                 print(f"[INFO] Pair used: {pair['image']} — {pair['message'][:50]}...")
                 await asyncio.sleep(10)
                 await channel.send(
-                    f"@everyone Also don't forget to say if you did onr didn't do your dailys, "
+                    f"@everyone Also don't forget to say if you did or didn't do your dailys, "
                     f"in the commands channel <#{COMMANDS_CHANNEL_ID}>."
                 )
             except discord.Forbidden:
