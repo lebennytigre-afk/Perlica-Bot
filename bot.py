@@ -250,12 +250,50 @@ async def uptime(interaction: discord.Interaction):
     parts.append(f"{seconds}s")
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
     
+import random
+
+USER_ONE_ID = 1226192200497496105  # replace with first user ID
+USER_TWO_ID = 287342168190877697  # replace with second user ID
+
+responses_user_one = [
+    "Heyyy you're so sweet !!! Have a perfect night sweetheart ✦ ݁˖ Love you !! ❤︎ >ᴗ<",
+    "Goodnight cutie !! Sleep well and dream beautifully ✧.* ❤︎",
+    "Aww you're amazing !! Rest well tonight sweetheart ✦ ݁˖",
+    "Ohhh it's you again !! Goodnight !! Don’t stay up too late ✧.*",
+    "Sleep well !! You better get some rest okay? ❤︎",
+    "Nighty night !! Go recharge your energy ✦ ݁˖",
+]
+
+responses_user_two = [
+    "Ey who is this ? Ewww get out of my sight ! (im to kind ill still say you goodnight) Goodnight.... hmmpppf",
+    "No thanks...",
+    "Lennyyyyy protect me from that guy !!!",
+    "Gn- bruh",
+    "Yea yea go to sleep"
+    "...",
+]
+
+owner = await bot.fetch_user(OWNER_ID)
+
+default_responses = [
+    f"Goodnight.... I'm calling my man to beat your ass up! {owner.mention}"
+]
+
 @bot.tree.command(
     name="goodnight_perlica",
     description="THATS MY COMMAND !!! DONT YOU DARE USE IT"
 )
 async def goodnight(interaction: discord.Interaction):
-    await interaction.response.send_message(random.choice(GNRESPONSES))
+    user_id = interaction.user.id
+
+    if user_id == USER_ONE_ID:
+        response = random.choice(responses_user_one)
+    elif user_id == USER_TWO_ID:
+        response = random.choice(responses_user_two)
+    else:
+        response = random.choice(default_responses)
+
+    await interaction.response.send_message(response)
 
 @bot.tree.command(name="testdaily", description="Test the daily message feature (owner only)")
 async def testdaily(interaction: discord.Interaction):
