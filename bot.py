@@ -223,7 +223,7 @@ async def uptime(interaction: discord.Interaction):
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
     
 @bot.tree.command(name="Goodnight⋆‧°𓏲ּ𝄢Perlica", description="THATS MY COMMANT !!! DONT YOU DARE USE IT")
-async def Goodnight_⋆‧°𓏲ּ𝄢_Perlica(interaction: discord.Interaction):
+async def Goodnight_my_lovely_Perlica(interaction: discord.Interaction):
      await interaction.response.send_message(f"Heyyy, you're so sweet !!!!!! Have a goodnight too sweetheart .✦ ݁˖ ˖Ი𐑼⋆ Love you !! ݁ ❤︎ >ᴗ<")
 
 
