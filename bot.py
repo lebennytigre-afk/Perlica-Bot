@@ -18,7 +18,15 @@ MESSAGE_TIME = os.environ.get("DAILY_MESSAGE_TIME", "09:00")
 TIMEZONE = os.environ.get("TIMEZONE", "UTC")
 OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "images")
+BOT_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGES_DIR = os.path.join(BOT_DIR, "images")
+
+# Debug: Print the path when bot starts
+print(f"[DEBUG] Looking for images at: {IMAGES_DIR}")
+print(f"[DEBUG] Directory exists: {os.path.exists(IMAGES_DIR)}")
+if os.path.exists(IMAGES_DIR):
+    files = os.listdir(IMAGES_DIR)
+    print(f"[DEBUG] Files in images directory: {files}")
 
 PAIRS = [
     {
