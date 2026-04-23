@@ -300,24 +300,17 @@ async def goodnight(interaction: discord.Interaction):
         await interaction.response.send_message(response)
 
     elif user_id == USER_TWO_ID:
-        images = [f for f in os.listdir(IMAGES_DIR) if f.endswith((".jpg", ".png"))]
-
-        if not images:
-            await interaction.response.send_message("No images found!")
-            return
-
-        chosen = random.choice(images)
-        image_path = os.path.join(IMAGES_DIR, chosen)
+        image_path = os.path.join(IMAGES_DIR, "image6.jpg")
 
         with open(image_path, "rb") as img_file:
-            file = discord.File(img_file, filename=chosen)
+            file = discord.File(img_file, filename="image6.jpg")
 
             await interaction.response.send_message(
                 content="Goodnight.... Dear koryn.",
                 file=file
             )
 
-        print(f"[INFO] /goodnight_perlica used by {interaction.user} — sent {chosen}")
+        print(f"[INFO] /goodnight_perlica used by {interaction.user} — sent image6.jpg")
 
     else:
         response = random.choice(default_responses)
