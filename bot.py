@@ -282,7 +282,7 @@ default_responses = [
 
 @bot.tree.command(
     name="goodnight_perlica",
-    description="THATS MY COMMAND !!! DONT YOU DARE USE IT"
+    description="go on...."
 )
 async def goodnight(interaction: discord.Interaction):
     user_id = interaction.user.id
