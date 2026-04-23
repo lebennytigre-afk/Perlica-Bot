@@ -301,10 +301,11 @@ async def goodnight(interaction: discord.Interaction):
             description="Goodnight.... Dear koryn.",
             color=0x2b2d31
         )
-        file = discord.File("images/image6.jpg", filename="image6.jpg")
-embed.set_image(url="attachment://image6.jpg")
 
-        await interaction.response.send_message(embed=embed)
+        file = discord.File("images/image6.jpg", filename="image6.jpg")
+        embed.set_image(url="attachment://image6.jpg")
+
+        await interaction.response.send_message(embed=embed, file=file)
 
     else:
         response = random.choice(default_responses)
