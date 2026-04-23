@@ -255,9 +255,6 @@ async def uptime(interaction: discord.Interaction):
     parts.append(f"{seconds}s")
     await interaction.response.send_message(f"I've been running for **{' '.join(parts)}**")
     
-import random
-import discord
-
 USER_ONE_ID = 1226192200497496105
 USER_TWO_ID = 287342168190877697
 
@@ -285,6 +282,12 @@ default_responses = [
     f"Goodnight.... I'm calling my man to beat your ass up! <@{OWNER_ID}>"
 ]
 
+import os
+import random
+import discord
+
+IMAGES_DIR = "images"
+
 @bot.tree.command(
     name="goodnight_perlica",
     description="go on...."
@@ -297,15 +300,24 @@ async def goodnight(interaction: discord.Interaction):
         await interaction.response.send_message(response)
 
     elif user_id == USER_TWO_ID:
-        embed = discord.Embed(
-            description="Goodnight.... Dear koryn.",
-            color=0x2b2d31
-        )
+        images = [f for f in os.listdir(IMAGES_DIR) if f.endswith((".jpg", ".png"))]
 
-        file = discord.File("images/image6.jpg", filename="image6.jpg")
-        embed.set_image(url="attachment://image6.jpg")
+        if not images:
+            await interaction.response.send_message("No images found!")
+            return
 
-        await interaction.response.send_message(embed=embed, file=file)
+        chosen = random.choice(images)
+        image_path = os.path.join(IMAGES_DIR, chosen)
+
+        with open(image_path, "rb") as img_file:
+            file = discord.File(img_file, filename=chosen)
+
+            await interaction.response.send_message(
+                content="Goodnight.... Dear koryn.",
+                file=file
+            )
+
+        print(f"[INFO] /goodnight_perlica used by {interaction.user} — sent {chosen}")
 
     else:
         response = random.choice(default_responses)
