@@ -308,7 +308,7 @@ async def goodnight(interaction: discord.Interaction):
         )
 
     print(f"[INFO] /goodnight_perlica used by {interaction.user} — sent image6.jpg")
-
+    
     else:
         response = random.choice(default_responses)
         await interaction.response.send_message(response)
