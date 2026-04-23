@@ -296,6 +296,7 @@ async def goodnight(interaction: discord.Interaction):
 
     if user_id == USER_ONE_ID:
         response = random.choice(responses_user_one)
+        await interaction.response.send_message(response)
 
     elif user_id == USER_TWO_ID:
         embed = discord.Embed(
@@ -305,11 +306,11 @@ async def goodnight(interaction: discord.Interaction):
         embed.set_image(url=KORYN_IMAGE_URL)
 
         await interaction.response.send_message(embed=embed)
+
     else:
         response = random.choice(default_responses)
-
-    await interaction.response.send_message(response)
-
+        await interaction.response.send_message(response)
+        
 @bot.tree.command(name="testdaily", description="Test the daily message feature (owner only)")
 async def testdaily(interaction: discord.Interaction):
     if OWNER_ID == 0 or interaction.user.id != OWNER_ID:
