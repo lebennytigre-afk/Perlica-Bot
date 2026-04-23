@@ -57,8 +57,6 @@ file = discord.File("image6.jpg", filename="image6.jpg")
 embed = discord.Embed(description="Goodnight.... Dear koryn.")
 embed.set_image(url="attachment://image6.jpg")
 
-await interaction.response.send_message(embed=embed, file=file)
-
 EIGHT_BALL_RESPONSES = [
     "It is certain.", "It is decidedly so.", "Without a doubt.",
     "Yes, definitely.", "You may rely on it.", "As I see it, yes.",
