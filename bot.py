@@ -301,7 +301,7 @@ async def goodnight(interaction: discord.Interaction):
             description="Goodnight.... Dear koryn.",
             color=0x2b2d31
         )
-        embed.set_image(url=KORYN_IMAGE_URL)
+        embed.set_image(url="attachment://image6.jpg")
 
         await interaction.response.send_message(embed=embed)
 
