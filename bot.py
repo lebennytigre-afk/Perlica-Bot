@@ -52,6 +52,13 @@ PAIRS = [
     },
 ]
 
+file = discord.File("image6.jpg", filename="image6.jpg")
+
+embed = discord.Embed(description="Goodnight.... Dear koryn.")
+embed.set_image(url="attachment://image6.jpg")
+
+await interaction.response.send_message(embed=embed, file=file)
+
 EIGHT_BALL_RESPONSES = [
     "It is certain.", "It is decidedly so.", "Without a doubt.",
     "Yes, definitely.", "You may rely on it.", "As I see it, yes.",
@@ -291,8 +298,13 @@ async def goodnight(interaction: discord.Interaction):
         response = random.choice(responses_user_one)
 
     elif user_id == USER_TWO_ID:
-        response = random.choice(responses_user_two)
+        embed = discord.Embed(
+            description="Goodnight.... Dear koryn.",
+            color=0x2b2d31
+        )
+        embed.set_image(url=KORYN_IMAGE_URL)
 
+        await interaction.response.send_message(embed=embed)
     else:
         response = random.choice(default_responses)
 
